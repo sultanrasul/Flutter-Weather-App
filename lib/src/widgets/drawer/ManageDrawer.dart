@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather_app/src/models/daily_forecast.dart';
 import 'package:weather_app/src/models/weather.dart';
 import 'package:weather_app/src/services/weather_service.dart';
 import 'package:weather_app/src/widgets/WeatherSurface.dart';
@@ -227,11 +228,16 @@ class _ManageDrawerState extends State<ManageDrawer> {
 
   Future<void> _addCity(String city, BuildContext context) async {
     try {
-      final List<Weather> weather = await WeatherService.fetchWeatherForecast(city);
-      widget.onAddCityCallback?.call(weather[0]);
+      final result = await WeatherService.fetchWeatherForecast(city);
+
+      final Weather weather = result.weatherList.first;
+
+      widget.onAddCityCallback?.call(weather);
+
       Navigator.pop(context);
+
       setState(() {
-        _weatherList.add(weather[0]);
+        _weatherList.add(weather);
       });
     } catch (e) {
       developer.log('Failed to load weather for $city: $e');

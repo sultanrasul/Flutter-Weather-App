@@ -16,7 +16,7 @@ class WeatherView extends StatefulWidget {
 class _WeatherViewState extends State<WeatherView> {
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  late Future weatherFuture;
+  late Future<WeatherForecastResult> weatherFuture;
   late Future<List<Weather>> drawerWeatherFuture;
   late List<String> cities = ["London"];
   late SharedPreferences prefs;
@@ -57,7 +57,7 @@ class _WeatherViewState extends State<WeatherView> {
       key: scaffoldMessengerKey, // attach the key here
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: FutureBuilder(
+        body: FutureBuilder<WeatherForecastResult>(
           future: weatherFuture,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -88,16 +88,19 @@ class _WeatherViewState extends State<WeatherView> {
                         builder: (context, snapshot) {
                           if (!snapshot.hasData) return const SizedBox();
                           // return BottomView(weatherList: snapshot.data);
-                          return TopView(weather: snapshot.data[0]);
+                          return TopView(weather: snapshot.data!.weatherList[0]);
                         },
                       ),
                     ),
 
                     // Top view as draggable
                     DraggableScrollableSheet(
+                      snap: true,
+                      snapSizes: [0.27, 0.82],
+                      snapAnimationDuration: Duration(milliseconds: 240),
                       initialChildSize: 0.27, // starting height (25% of screen)
                       minChildSize: 0.27, // minimum height (only handle visible)
-                      maxChildSize: 0.90, // max height (expanded)
+                      maxChildSize: 0.82, // max height (expanded)
                       builder: (context, scrollController) {
                         return Container(
                           decoration: const BoxDecoration(
@@ -125,7 +128,7 @@ class _WeatherViewState extends State<WeatherView> {
                                     ),
 
                                     // actual top view
-                                    BottomView(weatherList: snapshot.data)
+                                    BottomView(weatherForecastResult: snapshot.data!)
                                   ],
                                 );
                               },
@@ -134,7 +137,6 @@ class _WeatherViewState extends State<WeatherView> {
                         );
                       },
                     ),
-                  
                   ],
                 );
               },
