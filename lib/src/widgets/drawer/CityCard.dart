@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:weather_app/src/models/weather.dart';
 
+
 /// Sub-widget for a single city card
 class CityCard extends StatelessWidget {
   final Weather weather;

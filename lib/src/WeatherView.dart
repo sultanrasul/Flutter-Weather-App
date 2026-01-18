@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/src/models/weather.dart';
 import 'package:weather_app/src/services/weather_service.dart';
 import 'package:weather_app/src/widgets/BottomView.dart';
 import 'package:weather_app/src/widgets/drawer/ManageDrawer.dart';
 import 'package:weather_app/src/widgets/TopView.dart';
+import 'dart:developer' as developer;
 
 class WeatherView extends StatefulWidget {
   const WeatherView({super.key});
@@ -172,6 +174,64 @@ class _WeatherViewState extends State<WeatherView> {
                 setState(() {
                   drawerWeatherFuture = WeatherService.fetchCurrentWeatherForCities(cities);
                 });
+              },
+              onSetDefaultCity: (int index) async {
+                if (index == 0) return; // already default
+
+                setState(() {
+                  final city = cities.removeAt(index);
+                  cities.insert(0, city);
+
+                  selectedCity = 0;
+
+                  weatherFuture = WeatherService.fetchWeatherForecast(cities[selectedCity]);
+                  drawerWeatherFuture = WeatherService.fetchCurrentWeatherForCities(cities);
+                });
+
+                await prefs.setStringList("cities", cities);
+                
+                HapticFeedback.heavyImpact();
+
+                await Future.delayed(const Duration(milliseconds: 150));
+
+                HapticFeedback.heavyImpact();
+
+                Navigator.of(context).pop();
+
+                developer.log("Default city set to: ${cities.first}");
+              },
+              onDeleteCity: (int index) async {
+                if (cities.length <= 1) {
+                  scaffoldMessengerKey.currentState?.showSnackBar(
+                    const SnackBar(
+                      content: Text("You must have at least one city"),
+                    ),
+                  );
+                  return;
+                }
+
+                setState(() {
+                  cities.removeAt(index);
+
+                  // Fix selected city index
+                  if (selectedCity >= cities.length) {
+                    selectedCity = cities.length - 1;
+                  }
+
+                  weatherFuture = WeatherService.fetchWeatherForecast(cities[selectedCity]);
+                  drawerWeatherFuture = WeatherService.fetchCurrentWeatherForCities(cities);
+                });
+
+                await prefs.setStringList("cities", cities);
+
+                HapticFeedback.heavyImpact();
+
+                await Future.delayed(const Duration(milliseconds: 150));
+
+                HapticFeedback.heavyImpact();
+
+                Navigator.of(context).pop();
+                developer.log("City deleted at index: $index");
               },
             );
           },

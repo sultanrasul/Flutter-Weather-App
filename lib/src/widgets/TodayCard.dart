@@ -39,7 +39,7 @@ class TodayCard extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight:
-                          isCurrentBlock ? FontWeight.w700 : FontWeight.w500,
+                          isCurrentBlock ? FontWeight.w800 : FontWeight.w600,
                     ),
                   ),
                 ),

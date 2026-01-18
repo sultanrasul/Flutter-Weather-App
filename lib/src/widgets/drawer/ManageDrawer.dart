@@ -5,6 +5,7 @@ import 'package:weather_app/src/models/weather.dart';
 import 'package:weather_app/src/services/weather_service.dart';
 import 'package:weather_app/src/widgets/WeatherSurface.dart';
 import 'dart:developer' as developer;
+import 'package:flutter_slidable/flutter_slidable.dart';
 
 import 'package:weather_app/src/widgets/drawer/CityCard.dart';
 
@@ -14,29 +15,21 @@ class ManageDrawer extends StatefulWidget {
   final int selectedCity;
   final ValueChanged<int> onCitySelected;
   final Function(Weather)? onAddCityCallback;
+  final Function(int index)? onSetDefaultCity;
+  final Function(int index)? onDeleteCity;
 
-  const ManageDrawer({
-    super.key,
-    required this.weatherList,
-    required this.selectedCity,
-    required this.onCitySelected,
-    this.onBackPressed,
-    this.onAddCityCallback,
-    required GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey,
-  });
+  const ManageDrawer({super.key, required this.weatherList, required this.selectedCity, required this.onCitySelected, this.onBackPressed, this.onAddCityCallback, required GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey, required this.onSetDefaultCity, required this.onDeleteCity});
 
   @override
   State<ManageDrawer> createState() => _ManageDrawerState();
 }
 
 class _ManageDrawerState extends State<ManageDrawer> {
-  late List<Weather> _weatherList;
   late SharedPreferences prefs;
 
   @override
   void initState() {
     super.initState();
-    _weatherList = List.from(widget.weatherList); // local copy for reordering
   }
 
   Future<void> loadPref() async {
@@ -69,7 +62,7 @@ class _ManageDrawerState extends State<ManageDrawer> {
                 ),
               ),
 
-              SizedBox(height: height * 0.05),
+              SizedBox(height: height * 0.01),
 
               // 🏙 Manage title
               const Padding(
@@ -88,28 +81,63 @@ class _ManageDrawerState extends State<ManageDrawer> {
 
               const SizedBox(height: 16),
 
-              // 📍 Reorderable Cities list
+              // 📍 Cities list
               Expanded(
-                child: ReorderableListView.builder(
-                  itemCount: _weatherList.length,
+                child: ListView.builder(
+                  itemCount: widget.weatherList.length,
                   padding: const EdgeInsets.only(bottom: 80),
-                  onReorder: (oldIndex, newIndex) {
-                    setState(() {
-                      if (newIndex > oldIndex) newIndex -= 1;
-                      final Weather item = _weatherList.removeAt(oldIndex);
-                      _weatherList.insert(newIndex, item);
-                    });
-                  },
                   itemBuilder: (context, index) {
-                    final weather = _weatherList[index];
-                    return CityCard(
-                      key: ValueKey(weather), // ✅ every item needs a unique Key
-                      weather: weather,
-                      isSelected: index == widget.selectedCity,
-                      onTap: () {
-                        widget.onCitySelected(index);
-                        Navigator.pop(context);
-                      },
+                    final weather = widget.weatherList[index];
+                    return Slidable(
+                      key: ValueKey(weather),
+                      startActionPane: ActionPane(
+                        extentRatio: 0.65,
+                        motion: const ScrollMotion(),
+                        dismissible: DismissiblePane(
+                          closeOnCancel: true,
+                          confirmDismiss: () async {
+                            widget.onSetDefaultCity?.call(index);
+
+                            // 👇 FORCE the slidable to snap closed
+                            Slidable.of(context)?.close();
+
+                            return false; // prevent removal
+                          },
+                          onDismissed: () {},
+                        ),
+                        children: [
+                          SlidableAction(
+                            flex: 2,
+                            onPressed: (_) {
+                              widget.onSetDefaultCity?.call(index);
+                            },
+                            backgroundColor: Colors.black,
+                            foregroundColor: Colors.white,
+                            icon: Icons.settings,
+                            label: 'Set Default City',
+                          ),
+                          SlidableAction(
+                            flex: 1,
+                            onPressed: (_) {
+                              widget.onDeleteCity?.call(index);
+                            },
+                            borderRadius: BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
+                            backgroundColor: const Color(0xFFFE4A49),
+                            foregroundColor: Colors.white,
+                            icon: Icons.delete,
+                            label: 'Delete',
+                          ),
+                        ],
+                      ),
+                      child: CityCard(
+                        key: ValueKey(weather), // ✅ every item needs a unique Key
+                        weather: weather,
+                        isSelected: index == widget.selectedCity,
+                        onTap: () {
+                          widget.onCitySelected(index);
+                          Navigator.pop(context);
+                        },
+                      ),
                     );
                   },
                 ),
@@ -237,7 +265,7 @@ class _ManageDrawerState extends State<ManageDrawer> {
       Navigator.pop(context);
 
       setState(() {
-        _weatherList.add(weather);
+        widget.weatherList.add(weather);
       });
     } catch (e) {
       developer.log('Failed to load weather for $city: $e');
