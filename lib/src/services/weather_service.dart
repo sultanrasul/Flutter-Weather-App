@@ -18,13 +18,21 @@ class WeatherService {
   static const _apiKey = 'f831ea411b2ed1667ff737debbebd382';
 
   /// Returns a tuple: [List<Weather>, List<DailyForecast>]
-  static Future<WeatherForecastResult> fetchWeatherForecast(String city) async {
-    final url = Uri.parse(
-      'https://api.openweathermap.org/data/2.5/forecast'
-      '?q=$city&units=metric&appid=$_apiKey',
-    );
+  static Future<WeatherForecastResult> fetchWeatherForecast({String? city, double? lat, double? lon}) async {
+    assert(city != null || (lat != null && lon != null), 'Either city or lat/lon must be provided');
 
-    final response = await http.get(url);
+    final queryParameters = <String, String>{'appid': _apiKey, 'units': 'metric'};
+
+    if (city != null) {
+      queryParameters['q'] = city;
+    } else {
+      queryParameters['lat'] = lat!.toString();
+      queryParameters['lon'] = lon!.toString();
+    }
+
+    final uri = Uri.https('api.openweathermap.org', '/data/2.5/forecast', queryParameters);
+
+    final response = await http.get(uri);
 
     if (response.statusCode != 200) {
       throw Exception('Failed to load weather');
@@ -76,14 +84,7 @@ class WeatherService {
       }
       final condition = conditionCounts.entries.reduce((a, b) => a.value > b.value ? a : b).key;
 
-      daily.add(DailyForecast(
-        date: items.first.date,
-        minTemp: minTemp,
-        maxTemp: maxTemp,
-        rainChance: rainChance,
-        icon: icon,
-        condition: condition
-      ));
+      daily.add(DailyForecast(date: items.first.date, minTemp: minTemp, maxTemp: maxTemp, rainChance: rainChance, icon: icon, condition: condition));
     });
 
     daily.sort((a, b) => a.date.compareTo(b.date));

@@ -83,40 +83,39 @@ class TopView extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Status tag
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 5),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.4),
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: const BoxDecoration(
-                              color: Colors.greenAccent,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Updated',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    // Container(
+                    //   padding: const EdgeInsets.symmetric(
+                    //       horizontal: 12, vertical: 5),
+                    //   decoration: BoxDecoration(
+                    //     border: Border.all(
+                    //       color: Colors.white.withOpacity(0.4),
+                    //     ),
+                    //     borderRadius: BorderRadius.circular(20),
+                    //   ),
+                    //   child: Row(
+                    //     mainAxisSize: MainAxisSize.min,
+                    //     children: [
+                    //       Container(
+                    //         width: 6,
+                    //         height: 6,
+                    //         decoration: const BoxDecoration(
+                    //           color: Colors.greenAccent,
+                    //           shape: BoxShape.circle,
+                    //         ),
+                    //       ),
+                    //       const SizedBox(width: 6),
+                    //       const Text(
+                    //         'Updated',
+                    //         style: TextStyle(
+                    //           color: Colors.white,
+                    //           fontSize: 12,
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
 
                     // Weather icon (max size without overflow)
-                    const SizedBox(height: 20),
 
                     Expanded(
                       flex: 1, // controls how dominant the icon is
